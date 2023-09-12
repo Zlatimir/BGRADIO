@@ -6,6 +6,7 @@ import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.Player;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
+
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -13,6 +14,9 @@ import android.widget.Button;
 import android.widget.TextClock;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     ExoPlayer player;
     Button btnBgRadio;
     Button btn_1rock;
+    List<MediaItem> stations = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,19 +48,43 @@ public class MainActivity extends AppCompatActivity {
         player = builder.build();
         viewPlayer.setPlayer(player);
 
+        MediaMetadata mediaMetadata = new MediaMetadata.Builder().
+                setDisplayTitle("1RockTitle").
+                setArtist("1RockArtist").build();
+
+        MediaItem mediaItem = new MediaItem.Builder().
+                setMediaMetadata(mediaMetadata)
+                .setUri("http://149.13.0.81/radio1rock.ogg")
+                .build();
+
+        stations.add(mediaItem);
+
+        mediaMetadata = new MediaMetadata.Builder().
+                setDisplayTitle("BRGadioTitle").
+                setArtist("BGRadioArtist").build();
+
+        mediaItem = new MediaItem.Builder().
+                setMediaMetadata(mediaMetadata)
+                .setUri("http://149.13.0.81/bgradio.ogg")
+                .build();
+
+        stations.add(mediaItem);
+
+        player.addListener(new Player.Listener() {
+                    @Override
+                    public void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
+                        String title = mediaMetadata.displayTitle.toString();
+                        viewSong.setText(title);
+                    }
+                }
+        );
+        player.setMediaItems(stations);
+
         btn_1rock.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaMetadata mediaMetadata = new MediaMetadata.Builder()
-                        .setDisplayTitle("Radio1Rock title ...")
-                        .setArtist("Radio1Rock artist ...")
-                        .build();
-                link = link1rock;
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setMediaMetadata(mediaMetadata)
-                        .setUri(link)
-                        .build();
-                player.setMediaItem(mediaItem);
+                MediaItem item = stations.get(0);
+                player.setMediaItem(item);
                 player.prepare();
                 player.play();
             }
@@ -64,30 +93,13 @@ public class MainActivity extends AppCompatActivity {
         btnBgRadio.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                MediaMetadata mediaMetadata = new MediaMetadata.Builder()
-                        .setDisplayTitle("BGRadio title ...")
-                        .setArtist("BGRadio artist ...")
-                        .build();
-                link = linkBg;
-                MediaItem mediaItem = new MediaItem.Builder()
-                        .setMediaMetadata(mediaMetadata)
-                        .setUri(link)
-                        .build();
-                player.setMediaItem(mediaItem);
+                MediaItem item = stations.get(1);
+                player.setMediaItem(item);
                 player.prepare();
                 player.play();
             }
         });
 
-        player.addListener(
-                new Player.Listener() {
-                    @Override
-                    public void onMediaMetadataChanged(MediaMetadata mediaMetadata) {
-                        String title = mediaMetadata.displayTitle.toString();
-                        viewSong.setText(title);
-                    }
-                }
-        );
     }
 
     @Override
